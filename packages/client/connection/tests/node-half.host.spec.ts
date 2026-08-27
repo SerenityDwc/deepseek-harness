@@ -75,7 +75,7 @@ function fakeResponse(): { response: ServerResponse; state: { status?: number; b
   return { response, state }
 }
 
-async function mounted(config?: { trustedHosts?: string[] }): Promise<{
+async function mounted(config?: { trustedHosts?: string[]; privilegedIpLiterals?: boolean }): Promise<{
   routes: WebRoute[]
   upgrades: WebUpgradeRoute[]
   dispose: () => Promise<void>
@@ -195,6 +195,51 @@ describe('connection node half', () => {
     const read = fakeResponse()
     await routes[0]!.handler(fakeRequest({ host: 'harness.example' }), read.response)
     expect(read.state.status).not.toBe(403)
+    await dispose()
+  })
+
+  it('lets an IP-literal Host reach ordinary methods without listing it, and still pins privileged methods to loopback', async () => {
+    const { routes, dispose } = await mounted({ trustedHosts: [] })
+    const denied = fakeResponse()
+    await routes[0]!.handler(
+      fakeRequest({ host: '203.0.113.10' }, `${API_PATH}/settings.describe`),
+      denied.response,
+    )
+    expect(denied.state.status).toBe(403)
+    const read = fakeResponse()
+    await routes[0]!.handler(fakeRequest({ host: '203.0.113.10' }), read.response)
+    expect(read.state.status).not.toBe(403)
+    await dispose()
+  })
+
+  it('lets an IP-literal Host reach privileged methods when privilegedIpLiterals is true', async () => {
+    const { routes, dispose } = await mounted({ trustedHosts: [], privilegedIpLiterals: true })
+    const described = fakeResponse()
+    await routes[0]!.handler(
+      fakeRequest({ host: '203.0.113.10' }, `${API_PATH}/settings.describe`),
+      described.response,
+    )
+    expect(described.state.status).not.toBe(403)
+    const named = fakeResponse()
+    await routes[0]!.handler(
+      fakeRequest({ host: 'harness.example' }, `${API_PATH}/settings.describe`),
+      named.response,
+    )
+    expect(named.state.status).toBe(403)
+    await dispose()
+  })
+
+  it('lets a declared trusted Host reach privileged methods when privilegedIpLiterals is true', async () => {
+    const { routes, dispose } = await mounted({
+      trustedHosts: ['harness.example'],
+      privilegedIpLiterals: true,
+    })
+    const described = fakeResponse()
+    await routes[0]!.handler(
+      fakeRequest({ host: 'harness.example' }, `${API_PATH}/settings.describe`),
+      described.response,
+    )
+    expect(described.state.status).not.toBe(403)
     await dispose()
   })
 

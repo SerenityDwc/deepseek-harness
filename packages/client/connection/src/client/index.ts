@@ -9,7 +9,7 @@ import { ConnectionController, type ConnectionConfig, type ConnectionSinks, type
 import { FixtureApiClient } from './fixture.ts'
 import { WebApiClient } from './web-api-client.ts'
 import { createWebConnectionRpc, type RpcFetch } from './rpc.ts'
-import { isLoopbackHostname } from '../loopback-hostname.ts'
+import { isCanonicalIpLiteralHostname, isLoopbackHostname } from '../loopback-hostname.ts'
 import type { ClientConnectionRpc } from '../rpc.ts'
 
 // ---- Contract re-exports (browser-safe apiproxy channels + core types) ----
@@ -87,6 +87,12 @@ export interface ConnectionHandle {
   readonly api: IApiClient
   /** Whether the current page authority is loopback; non-browser contexts default to true. */
   readonly isLoopback: boolean
+  /**
+   * Whether this page should call Host settings/credential RPCs. True on
+   * loopback and on a canonical IP-literal page host (the same Host grant
+   * `privilegedIpLiterals` unlocks). DNS-named remote pages stay false.
+   */
+  readonly settingsOnHost: boolean
   /** Generation-scoped Host facts, including the account home and native path-open capability. */
   readonly hostDescription: HostDescriptionSource
   /** Generic logical RPC channels over the same Connection transport. */
@@ -130,6 +136,9 @@ export function apply(ctx: Context): void {
   const handle: ConnectionHandle = {
     api,
     isLoopback: pageLocation === undefined || isLoopbackHostname(pageLocation.hostname),
+    settingsOnHost: pageLocation === undefined
+      || isLoopbackHostname(pageLocation.hostname)
+      || isCanonicalIpLiteralHostname(pageLocation.hostname),
     hostDescription: {
       getSnapshot: () => description,
       subscribe: (listener) => {

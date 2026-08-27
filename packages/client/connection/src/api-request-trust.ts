@@ -14,7 +14,7 @@
  */
 
 import type { IncomingHttpHeaders } from 'node:http'
-import { isLoopbackHostname } from './loopback-hostname.ts'
+import { isCanonicalIpLiteralHostname, isLoopbackHostname } from './loopback-hostname.ts'
 
 /** The request facts the fence reads from either HTTP representation. */
 interface ApiTrustRequest {
@@ -87,13 +87,28 @@ function isTrustedAuthority(hostUrl: URL, trustedHosts: readonly string[]): bool
   })
 }
 
+/** Extra Host grants beyond loopback and the `trustedHosts` list. */
+export interface ApiTrustGrant {
+  /**
+   * When true, a canonical IP-literal Host passes without a `trustedHosts`
+   * entry. DNS rebinding uses an attacker-controlled name, not an IP
+   * literal. Privileged methods omit this unless `privilegedIpLiterals` is true.
+   */
+  ipLiterals?: boolean
+}
+
 /**
  * Decide whether one /api request may reach the RPC bridge.
  * @param request - Node HTTP or Fetch request facts (headers).
  * @param trustedHosts - non-loopback authorities this deployment serves: exact `host:port`, or port-less `host` matching any port.
- * @returns true when the Host is ours (loopback or trusted) and any attached browser markers are same-origin.
+ * @param grant - optional extra Host grants; privileged methods pass none unless `privilegedIpLiterals` is true.
+ * @returns true when the Host is ours (loopback, granted IP literal, or trusted) and any attached browser markers are same-origin.
  */
-export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: readonly string[]): boolean {
+export function isTrustedApiRequest(
+  request: ApiTrustRequest,
+  trustedHosts: readonly string[],
+  grant?: ApiTrustGrant,
+): boolean {
   // Host fence (DNS-rebinding defense), applied to every request: the browser
   // fills Host from the URL it believes it is talking to, so a rebound page
   // carries the attacker's domain here even though the socket lands on this
@@ -105,7 +120,10 @@ export function isTrustedApiRequest(request: ApiTrustRequest, trustedHosts: read
   if (host === undefined) return false
   const hostUrl = parseAuthority(host)
   if (hostUrl === undefined) return false
-  if (!isLoopbackHostname(hostUrl.hostname) && !isTrustedAuthority(hostUrl, trustedHosts)) return false
+  const hostOk = isLoopbackHostname(hostUrl.hostname)
+    || (grant?.ipLiterals === true && isCanonicalIpLiteralHostname(hostUrl.hostname))
+    || isTrustedAuthority(hostUrl, trustedHosts)
+  if (!hostOk) return false
   // Cross-site fence: modern browsers label the initiator relationship on
   // every fetch; an explicit cross-site marker is refused regardless of Origin.
   if (header(request.headers, 'sec-fetch-site') === 'cross-site') return false

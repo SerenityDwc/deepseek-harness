@@ -36,6 +36,17 @@ pnpm dsh web
 
 `pnpm run build` prepares the repository artifacts. `pnpm dsh web` uses those built artifacts without rebuilding.
 
+### Run with Docker
+
+Build an image that publishes the Web UI on a host port. The container binds every interface through a composition overlay; choose the host port with `-p`:
+
+```sh
+docker build -t deepseek-harness:local .
+docker run --rm -p 8080:3080 -e DEEPSEEK_API_KEY -v "${PWD}:/workspace" deepseek-harness:local
+```
+
+Then open `http://127.0.0.1:8080` or `http://<host-ip>:8080`. Full options, volumes, and the unauthenticated-network warning are in [deploy/docker/README.md](deploy/docker/README.md).
+
 ## Community and support
 
 - Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).

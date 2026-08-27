@@ -15,5 +15,5 @@
 
 ## 已知限制与暂缓事项
 
-- **远程浏览器没有持久化设置**：设置 RPC 仅限 loopback，因此在非 loopback 浏览器中绑定的 scope 以 `unavailable` 起步且从不跨线路，它支撑的每一行在那里都是无效的。
+- **DNS 具名的远程浏览器没有持久化设置**：那些页面保持进程内。回环与规范 IP 字面量页面会调用 Host 设置 RPC（`connection.settingsOnHost`）；若未打开 `privilegedIpLiterals`，Host 仍会对特权方法返回 403。
 - **每次写入仅一个字段**：`set` 只发送单个 `set` op，因此需要同时改动两个字段的行没有事务可用，会发布两个 revision。

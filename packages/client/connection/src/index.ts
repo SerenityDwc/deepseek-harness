@@ -51,19 +51,28 @@ export interface ConnectionConfig {
   /**
    * Authorities this deployment serves beyond loopback: exact `host:port`, or
    * port-less `host` matching any port. The /api trust fence refuses any
-   * request whose Host is neither loopback nor listed here, so a
-   * non-loopback (`0.0.0.0`) deployment must declare the names it is reached
-   * by (the dsh CLI derives the machine's LAN IP literals itself). An entry
-   * that is not a bare, canonical authority fails the plugin load.
+   * request whose Host is neither loopback, a canonical IP literal on this
+   * prefix, nor listed here, so a DNS-named non-loopback deployment must
+   * declare the names it is reached by (the dsh CLI also derives the machine's
+   * LAN IP literals). An entry that is not a bare, canonical authority fails
+   * the plugin load.
    */
   trustedHosts?: string[]
   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
   maxRequestBodyBytes?: number
+  /**
+   * When true, privileged `/api` methods use the same Host grants as ordinary
+   * methods (canonical IP literals and `trustedHosts`). Default false keeps
+   * them loopback-only. Docker's access-token overlay sets this after the
+   * published-port proxy has authenticated the caller.
+   */
+  privilegedIpLiterals?: boolean
 }
 
 export const Config: z<ConnectionConfig> = z.object({
   trustedHosts: z.array(String).default([]),
   maxRequestBodyBytes: z.natural().min(1).default(DEFAULT_MAX_REQUEST_BODY_BYTES),
+  privilegedIpLiterals: z.boolean().default(false),
 })
 
 /**
@@ -75,8 +84,8 @@ export const Config: z<ConnectionConfig> = z.object({
  * environment-variable name is configured and where from, which is
  * reconnaissance no anonymous caller should have. `trustedHosts` is a
  * DNS-rebinding fence, explicitly not authentication, so the whole
- * configuration plane stays loopback-same-origin until a real authentication
- * layer exists. `llm.discoverModels` belongs to that plane on both counts: it
+ * configuration plane stays loopback-same-origin unless
+ * `privilegedIpLiterals` is true. `llm.discoverModels` belongs to that plane on both counts: it
  * carries a draft credential, and it makes the HOST issue a GET to a URL the
  * caller chose and reports back the status or the parsed body — an anonymous
  * LAN caller would have a probe for whatever the host can reach and the
@@ -123,13 +132,14 @@ const PRIVILEGED_METHODS = new Set([
  * the prefix passes the browser-trust fence first (DNS-rebinding and
  * cross-site defense — [api-request-trust](./api-request-trust.ts));
  * privileged methods additionally pass it with an empty trust list, which
- * pins them to loopback.
+ * pins them to loopback, unless `privilegedIpLiterals` is true.
  * @param ctx - Host plugin context.
  * @param config - resolved plugin config (schema defaults applied).
  */
 export function apply(ctx: Context, config?: ConnectionConfig): void {
   // The Loader resolves schema defaults; hand-built test contexts may pass none.
   const trustedHosts = config?.trustedHosts ?? []
+  const privilegedIpLiterals = config?.privilegedIpLiterals === true
   const maxRequestBodyBytes = config?.maxRequestBodyBytes ?? DEFAULT_MAX_REQUEST_BODY_BYTES
   // Config boundary: a malformed entry fails the load loudly here rather than
   // silently authorizing its hostname prefix at request time.
@@ -144,7 +154,11 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
         : undefined
       if (method !== undefined
         && PRIVILEGED_METHODS.has(method)
-        && !isTrustedApiRequest(request, [])) {
+        && !isTrustedApiRequest(
+          request,
+          privilegedIpLiterals ? trustedHosts : [],
+          privilegedIpLiterals ? { ipLiterals: true } : undefined,
+        )) {
         return new Response('forbidden', { status: 403 })
       }
       if (request.method === 'GET' && (pathname === MUX_EVENTS_PATH || pathname === HOST_EVENTS_PATH)) {
@@ -162,7 +176,7 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
     kind: 'prefix',
     path: API_PATH,
     handler: async (req, res) => {
-      if (!isTrustedApiRequest(req, trustedHosts)) {
+      if (!isTrustedApiRequest(req, trustedHosts, { ipLiterals: true })) {
         res.writeHead(403)
         res.end('forbidden')
         return
@@ -181,7 +195,7 @@ export function apply(ctx: Context, config?: ConnectionConfig): void {
       apiCtx.effect(() => apiCtx.webServer.registerUpgrade({
         path,
         handler: (req, socket, head) => {
-          if (!isTrustedApiRequest(req, trustedHosts)) {
+          if (!isTrustedApiRequest(req, trustedHosts, { ipLiterals: true })) {
             rejectWebSocketUpgrade(socket)
             return
           }

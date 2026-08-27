@@ -40,6 +40,17 @@ pnpm dsh web
 
 `pnpm run build` 会准备仓库产物。`pnpm dsh web` 会直接使用这些已构建产物，不会重新构建。
 
+### 使用 Docker 运行
+
+构建镜像并在宿主机端口发布 Web UI。容器通过组合 overlay 绑定所有接口；用 `-p` 选择宿主机端口：
+
+```sh
+docker build -t deepseek-harness:local .
+docker run --rm -p 8080:3080 -e DEEPSEEK_API_KEY -v "${PWD}:/workspace" deepseek-harness:local
+```
+
+然后打开 `http://127.0.0.1:8080` 或 `http://<主机IP>:8080`。完整选项、卷以及无认证网络警告见 [deploy/docker/README.zh.md](deploy/docker/README.zh.md)。
+
 ## 社区与支持
 
 - 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。

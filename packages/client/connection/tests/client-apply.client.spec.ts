@@ -81,7 +81,16 @@ describe('connection client apply', () => {
 
   it('reports non-loopback page authority through the connection handle', async () => {
     ;(globalThis as Win).location = { hostname: '192.0.2.20', search: '' }
-    expect((await mount()).isLoopback).toBe(false)
+    const handle = await mount()
+    expect(handle.isLoopback).toBe(false)
+    expect(handle.settingsOnHost).toBe(true)
+  })
+
+  it('keeps DNS-named remote pages off Host settings', async () => {
+    ;(globalThis as Win).location = { hostname: 'remote.localhost', search: '' }
+    const handle = await mount()
+    expect(handle.isLoopback).toBe(false)
+    expect(handle.settingsOnHost).toBe(false)
   })
 
   it('start() hands out one loop, rejects a second consumer, and stop() aborts the streams', async () => {

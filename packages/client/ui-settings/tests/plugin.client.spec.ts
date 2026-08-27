@@ -35,6 +35,23 @@ describe('settings domain base plugin', () => {
     await vi.waitFor(() => { expect(describeCall).toHaveBeenCalledTimes(1) })
   })
 
+  it('reads Host settings on a non-loopback IP-literal page', async () => {
+    const describeCall = vi.fn().mockResolvedValue({
+      rpcId: 'plugin-bench' as never,
+      result: { ok: true, value: { writable: true, hasDocument: true, namespaces: [] } },
+    })
+    const ctx = new Context()
+    ctx.provide('connection', {
+      api: { settings: { describe: describeCall } },
+      isLoopback: false,
+      settingsOnHost: true,
+    } as never)
+    new TestRemote(ctx)
+    const fiber = ctx.plugin({ inject: [...inject], apply })
+    await fiber.await()
+    await vi.waitFor(() => { expect(describeCall).toHaveBeenCalledTimes(1) })
+  })
+
   it('refreshes the mirror on document commits and connection resets, once each', async () => {
     const { ctx, describeCall, fiber } = bench()
     await fiber.await()

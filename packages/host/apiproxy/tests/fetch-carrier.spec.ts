@@ -803,3 +803,34 @@ describe('resolveBase', () => {
     }
   })
 })
+
+describe('mintRpcId', () => {
+  it('mints without requiring secure-context randomUUID', async () => {
+    vi.stubGlobal('crypto', {
+      getRandomValues(bytes: Uint8Array) {
+        return bytes.fill(0)
+      },
+    })
+    class Probe extends AbstractApiClient {
+      lastMinted = ''
+      protected async doFetch(_input: URL, init?: RequestInit): Promise<Response> {
+        const body = JSON.parse(String(init?.body)) as { rpcId: string }
+        this.lastMinted = body.rpcId
+        return Response.json({
+          type: 'server-response',
+          rpcId: body.rpcId,
+          result: { ok: true, value: { items: [] } },
+        })
+      }
+    }
+    try {
+      const probe = new Probe()
+      await expect(probe.sessions.list({})).resolves.toMatchObject({
+        result: { ok: true, value: { items: [] } },
+      })
+      expect(probe.lastMinted).toBe('00000000-0000-4000-8000-000000000000')
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+})

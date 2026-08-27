@@ -409,14 +409,22 @@ export interface ConnectionConfig {
   /**
    * Authorities this deployment serves beyond loopback: exact `host:port`, or
    * port-less `host` matching any port. The /api trust fence refuses any
-   * request whose Host is neither loopback nor listed here, so a
-   * non-loopback (`0.0.0.0`) deployment must declare the names it is reached
-   * by (the dsh CLI derives the machine's LAN IP literals itself). An entry
-   * that is not a bare, canonical authority fails the plugin load.
+   * request whose Host is neither loopback, a canonical IP literal on this
+   * prefix, nor listed here, so a DNS-named non-loopback deployment must
+   * declare the names it is reached by (the dsh CLI also derives the machine's
+   * LAN IP literals). An entry that is not a bare, canonical authority fails
+   * the plugin load.
    */
   trustedHosts?: string[]
   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
   maxRequestBodyBytes?: number
+  /**
+   * When true, privileged `/api` methods use the same Host grants as ordinary
+   * methods (canonical IP literals and `trustedHosts`). Default false keeps
+   * them loopback-only. Docker's access-token overlay sets this after the
+   * published-port proxy has authenticated the caller.
+   */
+  privilegedIpLiterals?: boolean
 }
 ```
 

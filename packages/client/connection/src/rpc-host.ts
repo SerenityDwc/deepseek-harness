@@ -95,12 +95,13 @@ export class HostConnectionService extends Service implements HostConnectionHand
   ): () => Promise<void> {
     assertChannel(channel)
     const trustedHosts = options.authority === 'loopback' ? [] : this.trustedHosts
+    const grant = options.authority === 'loopback' ? undefined : { ipLiterals: true as const }
     const fetchHandler = rpcFetchHandler(channel, handler)
     const route: WebRoute = {
       kind: 'prefix',
       path: channel,
       handler: async (req, res) => {
-        if (!isTrustedApiRequest(req, trustedHosts)) {
+        if (!isTrustedApiRequest(req, trustedHosts, grant)) {
           res.writeHead(403)
           res.end('forbidden')
           return
