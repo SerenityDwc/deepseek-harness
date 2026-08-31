@@ -1,0 +1,8 @@
+# Docker overlay: bind every interface so `docker run -p` can publish the Web UI.
+# The product CLI still rejects `--host 0.0.0.0`; this overlay is the explicit
+# network-exposure choice for the container image. A patch replaces the whole
+# matched config, so port keeps the same webStartup fallback as the web bundle.
+- id: webserver
+  config:
+    host: '0.0.0.0'
+    port: !!js ctx.webStartup.port ?? 3080

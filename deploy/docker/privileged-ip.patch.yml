@@ -1,0 +1,10 @@
+# Access-token deployments: the published-port proxy already authenticated
+# the caller. Privileged /api methods then use the same Host grants as
+# ordinary methods (canonical IP literals and trustedHosts). A patch
+# replaces the whole matched config, so trustedHosts stays the Web-runtime
+# derivation.
+- id: connection
+  inject: [webRuntime]
+  config:
+    trustedHosts: !!js ctx.webRuntime.trustedHosts
+    privilegedIpLiterals: true

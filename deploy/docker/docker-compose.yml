@@ -1,0 +1,26 @@
+services:
+  dsh:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      # Sibling aiworkspace checkout (packages/voltmind-skills, voltmind-theme).
+      additional_contexts:
+        voltmind: ../../../aiworkspace
+    image: deepseek-harness:local
+    ports:
+      - "${DSH_PORT:-3080}:3080"
+    environment:
+      PORT: "3080"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-}
+      DSH_TRUSTED_HOST: ${DSH_TRUSTED_HOST:-}
+      DSH_ACCESS_TOKEN: ${DSH_ACCESS_TOKEN:-}
+      WEKNORA_BASE_URL: ${WEKNORA_BASE_URL:-http://8.149.246.29/api/v1}
+      WEKNORA_KNOWLEDGE_BASE_IDS: ${WEKNORA_KNOWLEDGE_BASE_IDS:-}
+      WEKNORA_AGENT_ID: ${WEKNORA_AGENT_ID:-}
+    volumes:
+      - ${DSH_WORKSPACE:-.}:/workspace
+      - dsh-home:/root/.dsh
+
+volumes:
+  dsh-home:

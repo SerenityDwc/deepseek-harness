@@ -1,0 +1,4 @@
+# Headless plotting with CJK glyphs (fonts-noto-cjk).
+font.family: sans-serif
+font.sans-serif: Noto Sans CJK SC, Noto Serif CJK SC, DejaVu Sans
+axes.unicode_minus: False
