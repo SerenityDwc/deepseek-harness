@@ -1,0 +1,26 @@
+# bda-api-pass bundle patch: mounts the plugin row when installed via
+# `dsh plugin --profile <name> add bda-api-pass`. Do NOT also add a manual
+# insert of the same plugin id in the profile's own cordis.patch.yml.
+#
+# The platform credentials are read at runtime from the container
+# environment variables BDA_AUTH_USER and AUTH_ADMIN_KEY (see AUTH_API.md);
+# they are deliberately NOT configurable through this row.
+#
+# Base URLs default to localhost inside the DSH container; override via the
+# BDA_AUTH_BASE_URL (credential service, data-analysis-backend) and
+# BDA_API_BASE_URL (business API origin, e.g. the frontend proxy) env vars.
+#
+# The API tool list is always fetched remotely from the data-analysis-backend
+# (GET /api/apis, X-Admin-Key from AUTH_ADMIN_KEY) and polled every
+# BDA_APIS_REFRESH_SECONDS (default 300). The URL defaults to
+# {authBaseUrl}/api/apis; override with BDA_APIS_URL. On failure the plugin
+# falls back to the local cache ~/.dsh/bda-api-pass/apis.cache.json (seeded
+# from the bundled default list), then retries on the next poll.
+- insert:
+    - id: bda-api-pass
+      name: 'bda-api-pass'
+      config:
+        authBaseUrl: !!js process.env.BDA_AUTH_BASE_URL ?? 'http://127.0.0.1:8080'
+        apiBaseUrl: !!js process.env.BDA_API_BASE_URL ?? 'http://127.0.0.1:3100'
+        apisUrl: !!js process.env.BDA_APIS_URL ?? ''
+        apisRefreshSeconds: !!js Number(process.env.BDA_APIS_REFRESH_SECONDS || 300)

@@ -1,0 +1,4 @@
+# voltmind-theme bundle patch: dual-face plugin row.
+- insert:
+    - id: voltmind-theme
+      name: '@voltmind/dsh-theme'

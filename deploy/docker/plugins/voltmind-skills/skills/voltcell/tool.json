@@ -1,0 +1,16 @@
+{
+  "name": "voltcell_design",
+  "description": "电芯参数设计：输入容量(Ah)/化学体系(LFP|NMC|LMO)/形态(pouch|cylindrical|prismatic)，计算能量、标称电压、能量密度、重量与循环寿命。触发词：电芯设计、电池设计、参数计算。",
+  "parameters": {
+    "capacityAh": { "type": "number", "description": "标称容量 (Ah)" },
+    "chemistry": { "type": "string", "enum": ["LFP", "NMC", "LMO"], "description": "化学体系" },
+    "formFactor": { "type": "string", "enum": ["pouch", "cylindrical", "prismatic"], "description": "形态" }
+  },
+  "outputProperties": {
+    "energyWh": { "type": "number" },
+    "nominalVoltageV": { "type": "number" },
+    "energyDensityWhKg": { "type": "number" },
+    "weightKg": { "type": "number" },
+    "cycleLife": { "type": "number" }
+  }
+}

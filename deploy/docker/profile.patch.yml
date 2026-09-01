@@ -1,0 +1,3 @@
+# Disable the shipped DeepSeek brand so voltmind-theme owns the brand slots.
+- id: ui-brand-official
+  disabled: true

@@ -1,0 +1,58 @@
+{
+  "name": "@voltmind/dsh-theme",
+  "description": "VoltClaw 双主题品牌插件：?theme=orange|blue 切换橙/蓝配色与 Logo（ctx.theme.overrideTokens 原生实现）+ 设置外观预览 + 品牌块 DOM 注入。",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-connection"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build-assets.mjs && tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsdown": "0.22.2",
+    "typescript": "~5.7.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@types/node": "^22.20.0"
+  },
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.js.map",
+    "lib/**/*.d.ts",
+    "src",
+    "assets",
+    "scripts",
+    "cordis.patch.yml",
+    "README.md"
+  ]
+}

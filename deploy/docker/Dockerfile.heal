@@ -1,0 +1,10 @@
+# One-layer wrap around a committed running image: add the start healer.
+# Build: docker build -f Dockerfile.heal -t deepseek-harness:v1.0.1 .
+FROM deepseek-harness:v1.0.1-fixed
+
+COPY heal-profile-links.sh /usr/local/bin/heal-profile-links.sh
+COPY start.sh /usr/local/bin/start.sh
+RUN sed -i 's/\r$//' /usr/local/bin/heal-profile-links.sh /usr/local/bin/start.sh \
+ && chmod +x /usr/local/bin/heal-profile-links.sh /usr/local/bin/start.sh
+
+ENTRYPOINT ["start.sh"]

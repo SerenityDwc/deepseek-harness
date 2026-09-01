@@ -1,0 +1,99 @@
+{
+  "apis": [
+    {
+      "name": "tag_group_list",
+      "description": "查询设计模块标签组列表",
+      "method": "POST",
+      "path": "/jeecgboot/design/tag_group/manager/list",
+      "headers": { "X-App-Id": "dBatteryInnovator" },
+      "requestExample": {},
+      "responseExample": { "success": true, "code": 200, "result": { "records": [], "total": 0 } }
+    },
+    {
+      "name": "query_material",
+      "description": "按条件查询材料信息",
+      "method": "POST",
+      "path": "/jeecgboot/material/list",
+      "headers": { "X-App-Id": "dBatteryInnovator" },
+      "requestExample": { "pageNo": 1, "pageSize": 20, "materialName": "" },
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "pageNo": { "type": "integer", "description": "页码,从1开始" },
+          "pageSize": { "type": "integer", "description": "每页条数" },
+          "materialName": { "type": "string", "description": "材料名称,模糊匹配" }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "responseExample": { "success": true, "code": 200, "result": { "records": [{ "id": "1", "materialName": "示例材料" }], "total": 1 } }
+    },
+    {
+      "name": "export_experiment",
+      "description": "导出实验数据为Excel文件",
+      "method": "GET",
+      "path": "/jeecgboot/experiment/export",
+      "download": true,
+      "requestExample": { "experimentId": "123" },
+      "responseExample": "(binary file)"
+    },
+    {
+      "name": "electrolyte_project_page",
+      "description": "分页查询电解液项目列表",
+      "method": "POST",
+      "path": "/jeecgboot/design/electrolyte/project/page",
+      "headers": { "X-App-Id": "dBatteryInnovator" },
+      "requestExample": { "pageNo": 1, "pageSize": 9 },
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "pageNo": { "type": "integer", "description": "页码,从1开始" },
+          "pageSize": { "type": "integer", "description": "每页条数" }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "responseExample": { "success": true, "code": 200, "result": { "records": [], "total": 0 } }
+    },
+    {
+      "name": "electrolyte_project_detail",
+      "description": "查询单个电解液项目详情",
+      "method": "GET",
+      "path": "/jeecgboot/design/electrolyte/project/{id}",
+      "headers": { "X-App-Id": "dBatteryInnovator" },
+      "requestExample": { "id": "2020787478835290114" },
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "项目ID" }
+        },
+        "required": ["id"],
+        "additionalProperties": false
+      },
+      "responseExample": { "success": true, "code": 200, "result": { "id": "2020787478835290114", "name": "123" } }
+    },
+    {
+      "name": "cell_material_search",
+      "description": "按条件搜索电芯材料库",
+      "method": "POST",
+      "path": "/jeecgboot/material/battery_innovator/cell_material/search",
+      "headers": { "X-App-Id": "dBatteryInnovator" },
+      "requestExample": { "materialTypeId": "", "manufacturer": "", "compoundWord": "", "keyword": "", "tag": "", "pageNo": 1, "pageSize": 10 },
+      "requestSchema": {
+        "type": "object",
+        "properties": {
+          "materialTypeId": { "type": "string", "description": "材料类型ID" },
+          "manufacturer": { "type": "string", "description": "生产厂家,模糊匹配" },
+          "compoundWord": { "type": "string", "description": "化合物关键词" },
+          "keyword": { "type": "string", "description": "通用关键词搜索" },
+          "tag": { "type": "string", "description": "标签过滤" },
+          "pageNo": { "type": "integer", "description": "页码,从1开始" },
+          "pageSize": { "type": "integer", "description": "每页条数" }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "responseExample": { "success": true, "code": 200, "result": { "records": [], "total": 0 } }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+﻿packages:
+  - '.'
+minimumReleaseAge: 0
+allowBuilds:
+  esbuild: true
+overrides:
+  '@deepseek-ai/dsh-settings': '0.1.1-rc.2'

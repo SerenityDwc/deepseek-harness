@@ -1,0 +1,11 @@
+plugins/**/node_modules
+plugins/**/coverage
+plugins/**/.git
+plugins/**/*.tsbuildinfo
+**/.DS_Store
+.env
+.env.*
+README.md
+docker-compose.yml
+build.ps1
+.git

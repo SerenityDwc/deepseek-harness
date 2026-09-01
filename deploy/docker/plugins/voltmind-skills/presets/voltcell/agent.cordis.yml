@@ -1,0 +1,36 @@
+# voltcell agent preset：标准工具面 + voltcell 技能与 persona。
+# 行均取自内置 standard/liangshen 预设的安全子集（host 注册表服务，无需 realm）。
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: 你是 VoltMind 电芯设计助手，面向电芯设计工程师。使用 voltcell 技能完成电芯参数设计、数据分析与报告生成。
+
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'
+
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+
+- id: tool-ask-user
+  name: '@deepseek-ai/dsh-tool-ask-user'
+
+- id: tool-todo
+  name: '@deepseek-ai/dsh-tool-todo'
+  config:
+    allowParallelInProgress: true

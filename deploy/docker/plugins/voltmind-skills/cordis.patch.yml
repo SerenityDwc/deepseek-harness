@@ -1,0 +1,4 @@
+# voltmind-skills bundle patch: host-only plugin row.
+- insert:
+    - id: voltmind-skills
+      name: '@voltmind/dsh-skills'
